@@ -24,7 +24,6 @@ class _OrderScreenState extends State<OrderScreen> {
 
   String formatDate(DateTime date) {
     final localDate = date.toLocal();
-
     return '${localDate.day}/${localDate.month}/${localDate.year}';
   }
 
@@ -36,8 +35,10 @@ class _OrderScreenState extends State<OrderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('My Orders'),
         backgroundColor: AppColor.mainColor,
@@ -63,13 +64,16 @@ class _OrderScreenState extends State<OrderScreen> {
                     size: 50,
                   ),
                   const SizedBox(height: 12),
-                  const Text('Failed to load orders'),
+                  Text(
+                    'Failed to load orders',
+                    style: TextStyle(color: colors.onSurface),
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     snapshot.error.toString(),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.grey,
+                    style: TextStyle(
+                      color: colors.onSurfaceVariant,
                       fontSize: 12,
                     ),
                   ),
@@ -85,21 +89,21 @@ class _OrderScreenState extends State<OrderScreen> {
           final orders = snapshot.data ?? [];
 
           if (orders.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.shopping_bag_outlined,
                     size: 80,
-                    color: Colors.grey,
+                    color: colors.onSurfaceVariant,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
                     'No orders yet',
                     style: TextStyle(
                       fontSize: 18,
-                      color: Colors.grey,
+                      color: colors.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -118,24 +122,24 @@ class _OrderScreenState extends State<OrderScreen> {
               return Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colors.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: Colors.grey.shade200,
+                    color: colors.outlineVariant,
                   ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Order',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
+                            color: colors.onSurface,
                           ),
                         ),
                         Text(
@@ -147,22 +151,50 @@ class _OrderScreenState extends State<OrderScreen> {
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 6),
+
                     Text(
                       'Order ID: ${order.id}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: Colors.grey,
+                        color: colors.onSurfaceVariant,
                       ),
                     ),
+
                     const SizedBox(height: 6),
+
                     Text(
                       'Date: ${formatDate(order.createdAt)}',
-                      style: const TextStyle(
-                        color: Colors.grey,
+                      style: TextStyle(
+                        color: colors.onSurfaceVariant,
                       ),
                     ),
-                    const Divider(height: 24),
+
+                    const SizedBox(height: 12),
+
+                    // Shipping Address
+                    _orderInfoRow(
+                      icon: Icons.location_on_outlined,
+                      title: 'Shipping Address',
+                      value: order.shippingAddress ?? 'Not available',
+                      colors: colors,
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Payment Method
+                    _orderInfoRow(
+                      icon: Icons.payment,
+                      title: 'Payment Method',
+                      value: order.paymentMethod ?? 'Not available',
+                      colors: colors,
+                    ),
+
+                    Divider(
+                      height: 24,
+                      color: colors.outlineVariant,
+                    ),
 
                     ...order.products.map((product) {
                       final title =
@@ -193,15 +225,18 @@ class _OrderScreenState extends State<OrderScreen> {
                                   return Container(
                                     width: 65,
                                     height: 65,
-                                    color: Colors.grey.shade100,
-                                    child: const Icon(
+                                    color: colors.surfaceContainerHighest,
+                                    child: Icon(
                                       Icons.image_not_supported,
+                                      color: colors.onSurfaceVariant,
                                     ),
                                   );
                                 },
                               ),
                             ),
+
                             const SizedBox(width: 12),
+
                             Expanded(
                               child: Column(
                                 crossAxisAlignment:
@@ -211,20 +246,22 @@ class _OrderScreenState extends State<OrderScreen> {
                                     title,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontWeight: FontWeight.bold,
+                                      color: colors.onSurface,
                                     ),
                                   ),
                                   const SizedBox(height: 5),
                                   Text(
                                     'Quantity: $quantity',
-                                    style: const TextStyle(
-                                      color: Colors.grey,
+                                    style: TextStyle(
+                                      color: colors.onSurfaceVariant,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
+
                             Text(
                               '${(price * quantity).toStringAsFixed(2)} EGP',
                               style: TextStyle(
@@ -237,17 +274,20 @@ class _OrderScreenState extends State<OrderScreen> {
                       );
                     }),
 
-                    const Divider(height: 20),
+                    Divider(
+                      height: 20,
+                      color: colors.outlineVariant,
+                    ),
 
                     Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Total',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
+                            color: colors.onSurface,
                           ),
                         ),
                         Text(
@@ -267,6 +307,47 @@ class _OrderScreenState extends State<OrderScreen> {
           );
         },
       ),
+    );
+  }
+
+  Widget _orderInfoRow({
+    required IconData icon,
+    required String title,
+    required String value,
+    required ColorScheme colors,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          icon,
+          size: 20,
+          color: AppColor.mainColor,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: colors.onSurface,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: TextStyle(
+                  color: colors.onSurfaceVariant,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

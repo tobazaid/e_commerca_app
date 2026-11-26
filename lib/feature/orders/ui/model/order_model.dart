@@ -5,6 +5,8 @@ class OrderModel {
   final double totalPrice;
   final DateTime createdAt;
   final String status;
+  final String? shippingAddress;
+  final String? paymentMethod;
 
   OrderModel({
     required this.id,
@@ -12,6 +14,8 @@ class OrderModel {
     required this.totalPrice,
     required this.createdAt,
     this.status = 'Pending',
+    this.shippingAddress,
+    this.paymentMethod,
   });
 
   Map<String, dynamic> toMap() {
@@ -20,6 +24,8 @@ class OrderModel {
       'totalPrice': totalPrice,
       'createdAt': createdAt.toIso8601String(),
       'status': status,
+      'shippingAddress': shippingAddress,
+      'paymentMethod': paymentMethod,
     };
   }
 
@@ -35,6 +41,8 @@ class OrderModel {
       totalPrice: (map['totalPrice'] as num).toDouble(),
       createdAt: DateTime.parse(map['createdAt']),
       status: map['status'] ?? 'Pending',
+      shippingAddress: map['shippingAddress'],
+      paymentMethod: map['paymentMethod'],
     );
   }
 }

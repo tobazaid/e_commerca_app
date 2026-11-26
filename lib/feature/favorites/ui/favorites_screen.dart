@@ -9,7 +9,10 @@ class FavoritesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Favorites'),
         centerTitle: true,
@@ -20,21 +23,21 @@ class FavoritesScreen extends StatelessWidget {
           final favorites = FavoritesController.instance.items;
 
           if (favorites.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.favorite_border,
                     size: 70,
-                    color: Colors.grey,
+                    color: colors.onSurfaceVariant,
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   Text(
                     'No favorites yet',
                     style: TextStyle(
                       fontSize: 18,
-                      color: Colors.grey,
+                      color: colors.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -53,9 +56,11 @@ class FavoritesScreen extends StatelessWidget {
               return Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colors.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
+                  border: Border.all(
+                    color: colors.outlineVariant,
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -68,10 +73,13 @@ class FavoritesScreen extends StatelessWidget {
                         height: 85,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
-                          return const SizedBox(
+                          return SizedBox(
                             width: 85,
                             height: 85,
-                            child: Icon(Icons.image_not_supported),
+                            child: Icon(
+                              Icons.image_not_supported,
+                              color: colors.onSurfaceVariant,
+                            ),
                           );
                         },
                       ),
@@ -88,10 +96,10 @@ class FavoritesScreen extends StatelessWidget {
                             product.title,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF003B73),
+                              color: colors.onSurface,
                             ),
                           ),
 
@@ -99,7 +107,7 @@ class FavoritesScreen extends StatelessWidget {
 
                           Text(
                             '${product.price.toStringAsFixed(2)} EGP',
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: AppColor.mainColor,
                               fontWeight: FontWeight.bold,
                               fontSize: 14,

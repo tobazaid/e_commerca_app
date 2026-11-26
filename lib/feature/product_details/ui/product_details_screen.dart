@@ -14,21 +14,23 @@ class ProductDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Product Details',
           style: TextStyle(
-            color: Color(0xFF003B73),
+            color: colors.onSurface,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
-        iconTheme: const IconThemeData(
-          color: Color(0xFF003B73),
+        iconTheme: IconThemeData(
+          color: colors.onSurface,
         ),
       ),
       body: SingleChildScrollView(
@@ -41,17 +43,17 @@ class ProductDetailsScreen extends StatelessWidget {
               height: 300,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+                color: colors.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Image.network(
                 product.thumbnail,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
-                  return const Icon(
+                  return Icon(
                     Icons.broken_image,
                     size: 60,
-                    color: Colors.grey,
+                    color: colors.onSurfaceVariant,
                   );
                 },
               ),
@@ -62,10 +64,10 @@ class ProductDetailsScreen extends StatelessWidget {
             // Product Name
             Text(
               product.title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF003B73),
+                color: colors.onSurface,
               ),
             ),
 
@@ -81,7 +83,10 @@ class ProductDetailsScreen extends StatelessWidget {
                 const SizedBox(width: 5),
                 Text(
                   product.rating.toString(),
-                  style: const TextStyle(fontSize: 16),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: colors.onSurface,
+                  ),
                 ),
               ],
             ),
@@ -101,6 +106,10 @@ class ProductDetailsScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Discount
+            const Text(
+              '',
+              style: TextStyle(fontSize: 0),
+            ),
             Text(
               '${product.discountPercentage.toStringAsFixed(0)}% OFF',
               style: const TextStyle(
@@ -113,12 +122,12 @@ class ProductDetailsScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Description Title
-            const Text(
+            Text(
               'Description',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF003B73),
+                color: colors.onSurface,
               ),
             ),
 
@@ -127,9 +136,9 @@ class ProductDetailsScreen extends StatelessWidget {
             // Description
             Text(
               product.description,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
-                color: Colors.grey,
+                color: colors.onSurfaceVariant,
                 height: 1.6,
               ),
             ),

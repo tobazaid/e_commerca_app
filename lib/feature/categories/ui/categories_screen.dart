@@ -32,20 +32,25 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Categories',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Color(0xFF003B73),
+            color: colors.onSurface,
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        foregroundColor: colors.onSurface,
         elevation: 0,
       ),
+
       body: FutureBuilder<List<ProductsModel>>(
         future: productsFuture,
         builder: (context, snapshot) {
@@ -60,7 +65,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Failed to load categories'),
+                  Text(
+                    'Failed to load categories',
+                    style: TextStyle(color: colors.onSurface),
+                  ),
                   TextButton(
                     onPressed: () {
                       setState(() {
@@ -100,6 +108,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 padding: const EdgeInsets.all(16),
                 child: TextField(
                   controller: searchController,
+                  style: TextStyle(color: colors.onSurface),
                   onChanged: (value) {
                     setState(() {
                       searchText = value;
@@ -107,7 +116,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   },
                   decoration: InputDecoration(
                     hintText: 'Search categories...',
-                    prefixIcon: const Icon(Icons.search),
+                    hintStyle: TextStyle(
+                      color: colors.onSurfaceVariant,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: colors.onSurfaceVariant,
+                    ),
                     suffixIcon: searchText.isNotEmpty
                         ? IconButton(
                             onPressed: () {
@@ -116,11 +131,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                 searchText = '';
                               });
                             },
-                            icon: const Icon(Icons.close),
+                            icon: Icon(
+                              Icons.close,
+                              color: colors.onSurfaceVariant,
+                            ),
                           )
                         : null,
                     filled: true,
-                    fillColor: Colors.grey.shade100,
+                    fillColor: colors.surfaceContainerHighest,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -132,8 +150,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               // Categories Grid
               Expanded(
                 child: categories.isEmpty
-                    ? const Center(
-                        child: Text('No categories found'),
+                    ? Center(
+                        child: Text(
+                          'No categories found',
+                          style: TextStyle(color: colors.onSurface),
+                        ),
                       )
                     : GridView.builder(
                         padding: const EdgeInsets.symmetric(
@@ -175,14 +196,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                             },
                             child: Container(
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: colors.surface,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: Colors.grey.shade200,
+                                  color: colors.outlineVariant,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withValues(
+                                    color: colors.shadow.withValues(
                                       alpha: 0.08,
                                     ),
                                     blurRadius: 6,
@@ -201,7 +222,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                       ),
                                       child: Container(
                                         width: double.infinity,
-                                        color: Colors.white,
+                                        color: colors.surfaceContainerHighest,
                                         padding: const EdgeInsets.all(12),
                                         child: Image.network(
                                           category.value.thumbnail,
@@ -210,10 +231,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                           alignment: Alignment.center,
                                           errorBuilder:
                                               (context, error, stackTrace) {
-                                            return const Icon(
+                                            return Icon(
                                               Icons.image_not_supported,
                                               size: 40,
-                                              color: Colors.grey,
+                                              color: colors.onSurfaceVariant,
                                             );
                                           },
                                         ),
@@ -235,18 +256,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                           categoryName,
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.bold,
-                                            color: Color(0xFF003B73),
+                                            color: colors.onSurface,
                                           ),
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
                                           '${categoryProducts.length} Products',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 12,
-                                            color: Colors.grey,
+                                            color: colors.onSurfaceVariant,
                                           ),
                                         ),
                                       ],

@@ -1,10 +1,9 @@
 
 import 'package:e_commerce_app/feature/cart/ui/model/cart_item_model.dart';
-import 'package:e_commerce_app/feature/orders/ui/data/orders_service.dart';
 import 'package:flutter/material.dart';
 import 'package:e_commerce_app/core/utils/app_color.dart';
 import 'package:e_commerce_app/feature/cart/ui/controller/cart_controller.dart';
-import 'package:e_commerce_app/feature/orders/ui/model/order_model.dart';
+import 'package:e_commerce_app/feature/checkout/ui/checkout_screen.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -14,84 +13,26 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  final OrdersService ordersService = OrdersService();
 
-  bool isCheckingOut = false;
-
-  Future<void> checkout() async {
+  Future<void> openCheckout() async {
     final cart = CartController.instance;
 
-    if (cart.items.isEmpty || isCheckingOut) return;
+    if (cart.items.isEmpty) return;
 
-    debugPrint('CHECKOUT FUNCTION STARTED');
-
-    setState(() {
-      isCheckingOut = true;
-    });
-
-    try {
-      final orderId = DateTime.now()
-          .microsecondsSinceEpoch
-          .toString();
-
-      final products = cart.items.map((item) {
-        return {
-          'productId': item.product.id,
-          'title': item.product.title,
-          'thumbnail': item.product.thumbnail,
-          'price': item.product.price,
-          'quantity': item.quantity,
-          'subtotal': item.product.price * item.quantity,
-        };
-      }).toList();
-
-      final order = OrderModel(
-        id: orderId,
-        products: products,
-        totalPrice: cart.totalPrice,
-        createdAt: DateTime.now(),
-      );
-
-      debugPrint('SAVING ORDER TO FIRESTORE');
-
-      await ordersService.saveOrder(order);
-
-      debugPrint('ORDER SAVED SUCCESSFULLY');
-
-      cart.clearCart();
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Order placed successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } catch (e, stackTrace) {
-      debugPrint('CHECKOUT ERROR: $e');
-      debugPrint('$stackTrace');
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Checkout failed: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          isCheckingOut = false;
-        });
-      }
-    }
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const CheckoutScreen(),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('My Cart'),
         backgroundColor: AppColor.mainColor,
@@ -103,21 +44,21 @@ class _CartScreenState extends State<CartScreen> {
           final cart = CartController.instance;
 
           if (cart.items.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.shopping_cart_outlined,
                     size: 80,
-                    color: Colors.grey,
+                    color: colors.onSurfaceVariant,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
                     'Your cart is empty',
                     style: TextStyle(
                       fontSize: 18,
-                      color: Colors.grey,
+                      color: colors.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -140,13 +81,15 @@ class _CartScreenState extends State<CartScreen> {
                   },
                 ),
               ),
+
+              // Total and Checkout
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colors.surface,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.15),
+                      color: colors.shadow.withValues(alpha: 0.15),
                       blurRadius: 10,
                       offset: const Offset(0, -3),
                     ),
@@ -155,19 +98,19 @@ class _CartScreenState extends State<CartScreen> {
                 child: Column(
                   children: [
                     Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Total:',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            color: colors.onSurface,
                           ),
                         ),
                         Text(
                           '${cart.totalPrice.toStringAsFixed(2)} EGP',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: AppColor.mainColor,
@@ -175,27 +118,19 @@ class _CartScreenState extends State<CartScreen> {
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 16),
+
                     SizedBox(
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
-                        onPressed:
-                            isCheckingOut ? null : checkout,
+                        onPressed: openCheckout,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColor.mainColor,
                           foregroundColor: Colors.white,
                         ),
-                        child: isCheckingOut
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text('Checkout'),
+                        child: const Text('Checkout'),
                       ),
                     ),
                   ],
@@ -217,16 +152,20 @@ class _CartItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = CartController.instance;
+    final colors = Theme.of(context).colorScheme;
 
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(
+          color: colors.outlineVariant,
+        ),
       ),
       child: Row(
         children: [
+          // Product Image
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Image.network(
@@ -235,15 +174,21 @@ class _CartItemCard extends StatelessWidget {
               height: 85,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
-                return const SizedBox(
+                return SizedBox(
                   width: 85,
                   height: 85,
-                  child: Icon(Icons.image_not_supported),
+                  child: Icon(
+                    Icons.image_not_supported,
+                    color: colors.onSurfaceVariant,
+                  ),
                 );
               },
             ),
           ),
+
           const SizedBox(width: 12),
+
+          // Product Information
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,20 +197,25 @@ class _CartItemCard extends StatelessWidget {
                   item.product.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
+                    color: colors.onSurface,
                   ),
                 ),
+
                 const SizedBox(height: 8),
+
                 Text(
                   '${item.product.price.toStringAsFixed(2)} EGP',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: AppColor.mainColor,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+
                 const SizedBox(height: 8),
+
                 Row(
                   children: [
                     IconButton(
@@ -276,12 +226,15 @@ class _CartItemCard extends StatelessWidget {
                         Icons.remove_circle_outline,
                       ),
                     ),
+
                     Text(
                       '${item.quantity}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
+                        color: colors.onSurface,
                       ),
                     ),
+
                     IconButton(
                       onPressed: () {
                         controller.increaseQuantity(item);
@@ -295,6 +248,8 @@ class _CartItemCard extends StatelessWidget {
               ],
             ),
           ),
+
+          // Remove Product
           IconButton(
             onPressed: () {
               controller.removeProduct(item);

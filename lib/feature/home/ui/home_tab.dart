@@ -22,14 +22,42 @@ class HomeTab extends StatefulWidget {
 class _HomeTabState extends State<HomeTab> {
   late Future<List<ProductsModel>> productsFuture;
 
+  final TextEditingController searchController =
+      TextEditingController();
+
+  String searchQuery = '';
+
   @override
   void initState() {
     super.initState();
     productsFuture = ProductsApiService().getProducts();
   }
 
+  // Filter Products
+  List<ProductsModel> filterProducts(
+    List<ProductsModel> products,
+  ) {
+    if (searchQuery.trim().isEmpty) {
+      return products;
+    }
+
+    return products.where((product) {
+      return product.title.toLowerCase().contains(
+            searchQuery.trim().toLowerCase(),
+          );
+    }).toList();
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -41,12 +69,19 @@ class _HomeTabState extends State<HomeTab> {
             // Search and Cart
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: CustomTextFormField(
+                    controller: searchController,
                     hintText: "what do you search for?",
                     prefixIcon: Icons.search,
+                    onChanged: (value) {
+                      setState(() {
+                        searchQuery = value;
+                      });
+                    },
                   ),
                 ),
+
                 const SizedBox(width: 12),
 
                 // Cart Icon
@@ -103,7 +138,8 @@ class _HomeTabState extends State<HomeTab> {
             FutureBuilder<List<ProductsModel>>(
               future: productsFuture,
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+                if (snapshot.connectionState ==
+                    ConnectionState.waiting) {
                   return const SizedBox(
                     height: 120,
                     child: Center(
@@ -113,7 +149,10 @@ class _HomeTabState extends State<HomeTab> {
                 }
 
                 if (snapshot.hasError) {
-                  return const Text("Failed to load categories");
+                  return Text(
+                    "Failed to load categories",
+                    style: TextStyle(color: colors.onSurface),
+                  );
                 }
 
                 final categoryProducts = <String, ProductsModel>{};
@@ -125,7 +164,8 @@ class _HomeTabState extends State<HomeTab> {
                   );
                 }
 
-                final categories = categoryProducts.entries.take(4).toList();
+                final categories =
+                    categoryProducts.entries.take(4).toList();
 
                 return SizedBox(
                   height: 120,
@@ -149,28 +189,31 @@ class _HomeTabState extends State<HomeTab> {
                             child: ClipOval(
                               child: Container(
                                 width: double.infinity,
-                                color: Colors.grey[200],
+                                color: colors.surfaceContainerHighest,
                                 child: Image.network(
                                   category.value.thumbnail,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return const Icon(
+                                  errorBuilder:
+                                      (context, error, stackTrace) {
+                                    return Icon(
                                       Icons.image_not_supported_outlined,
-                                      color: Colors.grey,
+                                      color: colors.onSurfaceVariant,
                                     );
                                   },
                                 ),
                               ),
                             ),
                           ),
+
                           const SizedBox(height: 8),
+
                           Text(
                             category.key,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
-                              color: Color(0xFF003B73),
+                              color: colors.onSurface,
                             ),
                           ),
                         ],
@@ -188,11 +231,12 @@ class _HomeTabState extends State<HomeTab> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Products",
+                  searchQuery.isEmpty ? "Products" : "Search Results",
                   style: AppTextStyle.style18500White.copyWith(
                     color: AppColor.mainColor,
                   ),
                 ),
+
                 Text(
                   "view all",
                   style: AppTextStyle.style18400White.copyWith(
@@ -208,7 +252,8 @@ class _HomeTabState extends State<HomeTab> {
             FutureBuilder<List<ProductsModel>>(
               future: productsFuture,
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+                if (snapshot.connectionState ==
+                    ConnectionState.waiting) {
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(30),
@@ -226,8 +271,14 @@ class _HomeTabState extends State<HomeTab> {
                           color: Colors.red,
                           size: 40,
                         ),
+
                         const SizedBox(height: 8),
-                        const Text("Something went wrong!"),
+
+                        Text(
+                          "Something went wrong!",
+                          style: TextStyle(color: colors.onSurface),
+                        ),
+
                         TextButton(
                           onPressed: () {
                             setState(() {
@@ -244,16 +295,39 @@ class _HomeTabState extends State<HomeTab> {
 
                 final products = snapshot.data ?? [];
 
-                if (products.isEmpty) {
-                  return const Center(
-                    child: Text("No products found"),
+                final filteredProducts = filterProducts(products);
+
+                if (filteredProducts.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(30),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.search_off,
+                            size: 55,
+                            color: colors.onSurfaceVariant,
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          Text(
+                            "No products found",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: colors.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   );
                 }
 
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: products.length,
+                  itemCount: filteredProducts.length,
                   gridDelegate:
                       const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
@@ -262,7 +336,7 @@ class _HomeTabState extends State<HomeTab> {
                     childAspectRatio: 0.55,
                   ),
                   itemBuilder: (context, index) {
-                    final product = products[index];
+                    final product = filteredProducts[index];
 
                     return ProductCard(
                       product: product,
@@ -339,6 +413,8 @@ class ProductCard extends StatefulWidget {
 class _ProductCardState extends State<ProductCard> {
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     final oldPrice =
         widget.price / (1 - widget.discountPercentage / 100);
 
@@ -347,9 +423,11 @@ class _ProductCardState extends State<ProductCard> {
       borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colors.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(
+            color: colors.outlineVariant,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -362,7 +440,7 @@ class _ProductCardState extends State<ProductCard> {
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
+                      color: colors.surfaceContainerHighest,
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(12),
                       ),
@@ -375,10 +453,10 @@ class _ProductCardState extends State<ProductCard> {
                         widget.imageUrl,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
-                          return const Icon(
+                          return Icon(
                             Icons.broken_image,
                             size: 50,
-                            color: Colors.grey,
+                            color: colors.onSurfaceVariant,
                           );
                         },
                       ),
@@ -453,8 +531,8 @@ class _ProductCardState extends State<ProductCard> {
                       widget.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF003B73),
+                      style: TextStyle(
+                        color: colors.onSurface,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -469,12 +547,14 @@ class _ProductCardState extends State<ProductCard> {
                           color: Colors.amber,
                           size: 16,
                         ),
+
                         const SizedBox(width: 4),
+
                         Text(
                           widget.rating.toString(),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
-                            color: Colors.grey,
+                            color: colors.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -484,7 +564,7 @@ class _ProductCardState extends State<ProductCard> {
 
                     Text(
                       "${widget.price.toStringAsFixed(0)} EGP",
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppColor.mainColor,
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
@@ -493,8 +573,8 @@ class _ProductCardState extends State<ProductCard> {
 
                     Text(
                       "${oldPrice.toStringAsFixed(0)} EGP",
-                      style: const TextStyle(
-                        color: Colors.grey,
+                      style: TextStyle(
+                        color: colors.onSurfaceVariant,
                         fontSize: 10,
                         decoration: TextDecoration.lineThrough,
                       ),
